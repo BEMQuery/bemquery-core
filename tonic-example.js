@@ -1,4 +1,4 @@
-require( 'bemquery-selector-engine/package.json' );
+require( 'bemquery-core/package.json' );
 
 var fs = require( 'fs' ),
     url = require( 'url' ),
