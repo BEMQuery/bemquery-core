@@ -1,10 +1,10 @@
-require( 'bemquery-package-boilerplate/package.json' );
+require( 'bemquery-core/package.json' );
 
 var fs = require( 'fs' ),
 	url = 'https://tonicdev.io' + process.env.TONIC_ENDPOINT_PATH;
 
 exports.tonicEndpoint = function( request, response ) {
-	response.end( fs.readFileSync( require.resolve( 'bemquery-package-boilerplate' ) ) );
+	response.end( fs.readFileSync( require.resolve( 'bemquery-core' ) ) );
 };
 
 `<!DOCTYPE html>
