@@ -5,6 +5,12 @@ const packageInfo = require( '../../package.json' );
 
 export default {
 	entry: 'src/index.js',
+	external: [
+		'bemquery-selector-engine'
+	],
+	globals: {
+		'bemquery-selector-engine': 'bemquerySelectorEngine'
+	},
 	format: 'es6',
 	sourceMap: true,
 	plugins: [
