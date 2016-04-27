@@ -1,6 +1,6 @@
 {
   "name": "bemquery-core",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "BEM selector engine",
   "main": "dist/bemquery-core.umd.js",
   "jsnext:main": "dist/bemquery-core.js",
