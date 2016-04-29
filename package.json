@@ -24,9 +24,7 @@
     "url": "git+https://github.com/BEMQuery/bemquery-core.git"
   },
   "keywords": [
-    "BEM",
-    "selector",
-    "engine"
+    "BEMQuery"
   ],
   "files": [
     "dist",
