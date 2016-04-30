@@ -89,7 +89,7 @@ class BEMQuery {
 	 * Gets element with given index.
 	 *
 	 * @param {Number} index Element's index.
-	 * @returns {BEMQuery} New BEMQuery instance with fetched element
+	 * @return {BEMQuery} New BEMQuery instance with fetched element
 	 * as an only element in the collection.
 	 */
 	get( index ) {
@@ -110,7 +110,7 @@ class BEMQuery {
 	 * Executes callback on every element in the collection.
 	 *
 	 * @param {Function} callback Callback to be executed.
-	 * @returns {BEMQuery} Current `BEMQuery` instance.
+	 * @return {BEMQuery} Current `BEMQuery` instance.
 	 */
 	each( callback ) {
 		if ( typeof callback !== 'function' ) {
@@ -129,7 +129,7 @@ class BEMQuery {
 	/**
 	 * Returns iterator for contained elements.
 	 *
-	 * @returns {Iterator} Returned iterator.
+	 * @return {Iterator} Returned iterator.
 	 */
 	[ Symbol.iterator ]() {
 		let i = 0;
