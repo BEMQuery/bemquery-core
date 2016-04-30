@@ -11,7 +11,7 @@ import BEMQuery from './BEMQuery';
  * should be created.
  * @param {Document|HTMLElement|BEMQuery} context Context from which
  * elements should be fetched.
- * @returns {BEMQuery} New BEMQuery instance.
+ * @return {BEMQuery} New BEMQuery instance.
  */
 function factory( query, context = document ) {
 	const selectorEngine = bse();
