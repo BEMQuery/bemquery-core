@@ -1,6 +1,7 @@
 'use strict';
 
-import bse from 'bemquery-selector-engine';
+import bsc from 'bemquery-selector-converter';
+import SelectorEngine from 'bemquery-selector-engine';
 import BEMQuery from './BEMQuery';
 
 /**
@@ -14,8 +15,9 @@ import BEMQuery from './BEMQuery';
  * @return {BEMQuery} New BEMQuery instance.
  */
 function factory( query, context = document ) {
-	const selectorEngine = bse();
-	const bemQuery = new BEMQuery( query, context, selectorEngine );
+	const converter = bsc();
+	const selectorEngine = new SelectorEngine();
+	const bemQuery = new BEMQuery( query, context, converter, selectorEngine );
 
 	return bemQuery;
 }

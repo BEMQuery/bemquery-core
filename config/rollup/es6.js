@@ -6,9 +6,11 @@ const packageInfo = require( '../../package.json' );
 export default {
 	entry: 'src/index.js',
 	external: [
+		'bemquery-selector-converter',
 		'bemquery-selector-engine'
 	],
 	globals: {
+		'bemquery-selector-converter': 'bemquerySelectorConverter',
 		'bemquery-selector-engine': 'bemquerySelectorEngine'
 	},
 	format: 'es6',

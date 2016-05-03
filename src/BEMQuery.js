@@ -1,5 +1,8 @@
-/* eslint no-console: 0 */
 'use strict';
+
+function checkConverter( converter ) {
+	return typeof converter === 'object' && typeof converter.convert === 'function';
+}
 
 function checkSelectorEngine( selectorEngine ) {
 	return typeof selectorEngine === 'object' && typeof selectorEngine.find === 'function';
@@ -17,13 +20,14 @@ function determineContext( context ) {
 	return context;
 }
 
-function fetchElements( query, context, selectorEngine ) {
+function fetchElements( query, context, converter, selectorEngine ) {
 	if ( !query ) {
 		throw new TypeError( 'Selector must be set.' );
 	}
 
 	if ( typeof query === 'string' ) {
-		return selectorEngine.find( query, context ).elements;
+		query = converter.convert( query ).CSS;
+		return selectorEngine.find( query, context );
 	} else if ( query instanceof HTMLElement ) {
 		return [
 			query
@@ -46,7 +50,7 @@ function defineProperties( obj, elements ) {
 		Object.defineProperty( obj, index, {
 			enumerable: true,
 			get() {
-				return new BEMQuery( this.elements[ index ], document, this.selectorEngine ); // eslint-disable-line no-use-before-define
+				return new BEMQuery( this.elements[ index ], document, this.converter, this.selectorEngine ); // eslint-disable-line no-use-before-define
 			}
 		} );
 	}, obj );
@@ -69,20 +73,26 @@ class BEMQuery {
 	 * should be created.
 	 * @param {Document|HTMLElement|BEMQuery} context Context from which
 	 * elements should be fetched.
-	 * @param {SelectorEngine} selectorEngine BEM selector engine to be used
+	 * @param {Converter} converter BEM selector converter to be used.
+	 * @param {SelectorEngine} selectorEngine CSS selector engine to be used
 	 * by the current and descendant `BEMQuery` instances.
 	 * @class
 	 */
-	constructor( query, context, selectorEngine ) {
+	constructor( query, context, converter, selectorEngine ) {
+		if ( !checkConverter( converter ) ) {
+			throw new TypeError( 'Converter must be an object with convert method defined.' );
+		}
+
 		if ( !checkSelectorEngine( selectorEngine ) ) {
 			throw new TypeError( 'SelectorEngine must be an object with find method defined.' );
 		}
 
+		this.converter = converter;
 		this.selectorEngine = selectorEngine;
 
 		context = determineContext( context );
 
-		defineProperties( this, fetchElements( query, context, selectorEngine ) );
+		defineProperties( this, fetchElements( query, context, converter, selectorEngine ) );
 	}
 
 	/**
@@ -103,7 +113,7 @@ class BEMQuery {
 			throw new RangeError( 'Index cannot be greater than collection\'s length.' );
 		}
 
-		return new BEMQuery( this.elements[ index ], document, this.selectorEngine );
+		return new BEMQuery( this.elements[ index ], document, this.converter, this.selectorEngine );
 	}
 
 	/**
@@ -117,10 +127,11 @@ class BEMQuery {
 			throw new TypeError( 'Callback must be a function.' );
 		}
 
+		const converter = this.converter;
 		const selectorEngine = this.selectorEngine;
 
 		this.elements.forEach( ( element ) => {
-			callback( new BEMQuery( element, document, selectorEngine ) );
+			callback( new BEMQuery( element, document, converter, selectorEngine ) );
 		} );
 
 		return this;
@@ -134,6 +145,7 @@ class BEMQuery {
 	[ Symbol.iterator ]() {
 		let i = 0;
 		const elements = this.elements;
+		const converter = this.converter;
 		const selectorEngine = this.selectorEngine;
 
 		return {
@@ -142,7 +154,7 @@ class BEMQuery {
 					const element = elements[ i++ ];
 
 					return {
-						value: new BEMQuery( [ element ], document, selectorEngine ),
+						value: new BEMQuery( [ element ], document, converter, selectorEngine ),
 						done: false
 					};
 				}

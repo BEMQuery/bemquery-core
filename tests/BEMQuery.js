@@ -3,7 +3,8 @@
 'use strict';
 
 import BEMQuery from '../src/BEMQuery';
-import { SelectorEngine } from './support/mocks/bemquery-selector-engine';
+import { default as converterFactory, Selector as Selector } from './support/mocks/bemquery-selector-converter';
+import SelectorEngine from './support/mocks/bemquery-selector-engine';
 
 const expect = chai.expect;
 
@@ -21,24 +22,38 @@ describe( 'BEMQuery', () => {
 	} );
 
 	it( 'requires proper type of selector', () => {
+		const converter = converterFactory();
 		const selectorEngine = new SelectorEngine();
 
 		expect( () => {
-			new BEMQuery( undefined, null, selectorEngine );
+			new BEMQuery( undefined, null, converter, selectorEngine );
 		} ).to.throw( TypeError, 'Selector must be set.' );
 
 		expect( () => {
-			new BEMQuery( 1, null, selectorEngine );
+			new BEMQuery( 1, null, converter, selectorEngine );
 		} ).to.throw( TypeError, 'Selector must be a string, object, array or DOM element.' );
 	} );
 
-	it( 'requires proper type of SelectorEngine', () => {
+	it( 'requires proper type of Converter', () => {
 		expect( () => {
 			new BEMQuery( 'bogus', document, 1 );
-		} ).to.throw( TypeError, 'SelectorEngine must be an object with find method defined.' );
+		} ).to.throw( TypeError, 'Converter must be an object with convert method defined.' );
 
 		expect( () => {
 			new BEMQuery( 'bogus', document, {} );
+		} ).to.throw( TypeError, 'Converter must be an object with convert method defined.' );
+	} );
+
+	it( 'requires proper type of SelectorEngine', () => {
+		const converter = converterFactory();
+
+		expect( () => {
+
+			new BEMQuery( 'bogus', document, converter, 1 );
+		} ).to.throw( TypeError, 'SelectorEngine must be an object with find method defined.' );
+
+		expect( () => {
+			new BEMQuery( 'bogus', document, converter, {} );
 		} ).to.throw( TypeError, 'SelectorEngine must be an object with find method defined.' );
 	} );
 
@@ -49,10 +64,11 @@ describe( 'BEMQuery', () => {
 			'hublabubla'
 		];
 
+		const converter = converterFactory();
 		const selectorEngine1 = new SelectorEngine();
 
 		// Selector.
-		const bemQuery1 = new BEMQuery( 'bogus', document, selectorEngine1 );
+		const bemQuery1 = new BEMQuery( 'bogus', document, converter, selectorEngine1 );
 		expect( bemQuery1.elements ).to.deep.equal( SelectorEngine.elements );
 
 		const descriptor1 = Object.getOwnPropertyDescriptor( bemQuery1, 'elements' );
@@ -62,7 +78,7 @@ describe( 'BEMQuery', () => {
 
 		// NodeList.
 		const elements = document.querySelectorAll( '.block' );
-		const bemQuery2 = new BEMQuery( elements, document, selectorEngine1 );
+		const bemQuery2 = new BEMQuery( elements, document, converter, selectorEngine1 );
 		expect( bemQuery2.elements ).to.deep.equal( Array.from( elements ) );
 
 		const descriptor2 = Object.getOwnPropertyDescriptor( bemQuery2, 'elements' );
@@ -73,7 +89,7 @@ describe( 'BEMQuery', () => {
 		// BEMQuery instance.
 		SelectorEngine.elements = [];
 
-		const bemQuery3 = new BEMQuery( bemQuery1, document, selectorEngine1 );
+		const bemQuery3 = new BEMQuery( bemQuery1, document, converter, selectorEngine1 );
 		expect( bemQuery3.elements ).to.deep.equal( bemQuery1.elements );
 
 		const descriptor3 = Object.getOwnPropertyDescriptor( bemQuery3, 'elements' );
@@ -82,9 +98,26 @@ describe( 'BEMQuery', () => {
 		expect( descriptor3.enumerable ).to.be.false;
 	} );
 
+	it( 'converts selector before passing it to the SelectorEngine#find method', () => {
+		Selector.BEM = 'bogus';
+		Selector.CSS = '.bogus';
+
+		const converter = converterFactory();
+		const selectorEngine = new SelectorEngine();
+		const spy = sinon.spy( selectorEngine, 'find' );
+
+		new BEMQuery( 'bogus', document, converter, selectorEngine );
+
+		expect( spy ).to.have.been.calledWith( '.bogus', document );
+	} );
+
 	it( 'changes context of searching based on second parameter', () => {
 		fixture.load( 'elements.html' );
 
+		Selector.BEM = 'bogus';
+		Selector.CSS = '.bogus';
+
+		const converter = converterFactory();
 		const context1 = document.querySelector( '.block' );
 		const context2 = document.querySelector( '.block__elem' );
 
@@ -92,9 +125,9 @@ describe( 'BEMQuery', () => {
 		const selectorEngine1 = new SelectorEngine();
 		const spy1 = sinon.spy( selectorEngine1, 'find' );
 
-		new BEMQuery( 'bogus', context1, selectorEngine1 );
+		new BEMQuery( 'bogus', context1, converter, selectorEngine1 );
 
-		expect( spy1 ).to.have.been.calledWith( 'bogus', context1 );
+		expect( spy1 ).to.have.been.calledWith( '.bogus', context1 );
 
 		// BEMQuery instance as a context.
 		SelectorEngine.elements = [
@@ -105,14 +138,14 @@ describe( 'BEMQuery', () => {
 		const selectorEngine2 = new SelectorEngine();
 		const spy2 = sinon.spy( selectorEngine2, 'find' );
 
-		new BEMQuery( 'bogus', new BEMQuery( 'bogus', document, selectorEngine1 ), selectorEngine2 );
+		new BEMQuery( 'bogus', new BEMQuery( 'bogus', document, converter, selectorEngine1 ), converter, selectorEngine2 );
 
-		expect( spy2 ).to.have.been.calledWith( 'bogus', context2 );
+		expect( spy2 ).to.have.been.calledWith( '.bogus', context2 );
 
 		// Fallback to document as a context.
-		new BEMQuery( 'bogus', null, selectorEngine1 );
+		new BEMQuery( 'bogus', null, converter, selectorEngine1 );
 
-		expect( spy1 ).to.have.been.calledWith( 'bogus', document );
+		expect( spy1 ).to.have.been.calledWith( '.bogus', document );
 	} );
 
 	it( 'has iterator returning new BEMQuery instance', () => {
@@ -121,8 +154,9 @@ describe( 'BEMQuery', () => {
 		let i = 0;
 		const elements = document.querySelectorAll( '.block' );
 
+		const converter = converterFactory();
 		const selectorEngine = new SelectorEngine();
-		const bemQuery = new BEMQuery( elements, document, selectorEngine );
+		const bemQuery = new BEMQuery( elements, document, converter, selectorEngine );
 
 		expect( bemQuery ).has.property( Symbol.iterator );
 
@@ -139,8 +173,9 @@ describe( 'BEMQuery', () => {
 
 		const elements = Array.from( document.querySelectorAll( '.block' ) );
 
+		const converter = converterFactory();
 		const selectorEngine = new SelectorEngine();
-		const bemQuery = new BEMQuery( elements, document, selectorEngine );
+		const bemQuery = new BEMQuery( elements, document, converter, selectorEngine );
 
 		elements.forEach( ( element, index ) => {
 			expect( bemQuery[ index ] ).to.be.an.instanceof( BEMQuery );
@@ -158,8 +193,9 @@ describe( 'BEMQuery', () => {
 
 		const elements = Array.from( document.querySelectorAll( '.block' ) );
 
+		const converter = converterFactory();
 		const selectorEngine = new SelectorEngine();
-		const bemQuery = new BEMQuery( elements, document, selectorEngine );
+		const bemQuery = new BEMQuery( elements, document, converter, selectorEngine );
 
 		expect( bemQuery.length ).to.equal( elements.length );
 
@@ -182,8 +218,9 @@ describe( 'BEMQuery#get', () => {
 		fixture.load( 'elements.html' );
 
 		const elements = document.querySelectorAll( '.block' );
+		const converter = converterFactory();
 		const selectorEngine = new SelectorEngine();
-		const bemQuery = new BEMQuery( elements, document, selectorEngine );
+		const bemQuery = new BEMQuery( elements, document, converter, selectorEngine );
 
 		expect( bemQuery.get( 0 ) ).to.be.an.instanceof( BEMQuery );
 		expect( bemQuery.get( 0 ).elements[ 0 ] ).to.equal( elements[ 0 ] );
@@ -195,8 +232,9 @@ describe( 'BEMQuery#get', () => {
 		fixture.load( 'elements.html' );
 
 		const elements = document.querySelectorAll( '.block' );
+		const converter = converterFactory();
 		const selectorEngine = new SelectorEngine();
-		const bemQuery = new BEMQuery( elements, document, selectorEngine );
+		const bemQuery = new BEMQuery( elements, document, converter, selectorEngine );
 
 		expect( () => {
 			bemQuery.get( 'hublabubla' );
@@ -225,8 +263,9 @@ describe( 'BEMQuery#each', () => {
 		fixture.load( 'elements.html' );
 
 		const elements = document.querySelectorAll( '.block' );
+		const converter = converterFactory();
 		const selectorEngine = new SelectorEngine();
-		const bemQuery = new BEMQuery( elements, document, selectorEngine );
+		const bemQuery = new BEMQuery( elements, document, converter, selectorEngine );
 
 		const called = [];
 		const callback = ( element ) => {
@@ -240,8 +279,9 @@ describe( 'BEMQuery#each', () => {
 	} );
 
 	it( 'throws error when callback is not a function', () => {
+		const converter = converterFactory();
 		const selectorEngine = new SelectorEngine();
-		const bemQuery = new BEMQuery( [], document, selectorEngine );
+		const bemQuery = new BEMQuery( [], document, converter, selectorEngine );
 
 		expect( () => {
 			bemQuery.each( 'hublabubla' );
@@ -249,8 +289,9 @@ describe( 'BEMQuery#each', () => {
 	} );
 
 	it( 'returns BEMQuery instance', () => {
+		const converter = converterFactory();
 		const selectorEngine = new SelectorEngine();
-		const bemQuery = new BEMQuery( [], document, selectorEngine );
+		const bemQuery = new BEMQuery( [], document, converter, selectorEngine );
 
 		const result = bemQuery.each( () => {} );
 
