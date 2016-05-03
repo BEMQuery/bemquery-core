@@ -2,6 +2,11 @@
 
 ---
 
+## 0.1.0
+
+* Updated boilerplate.
+* Added [bemquery-selector-converter](https://github.com/BEMQuery/bemquery-selector-converter) as dependency.
+
 ## 0.0.2
 
 * Fixed docs.
