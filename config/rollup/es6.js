@@ -13,7 +13,7 @@ export default {
 		'bemquery-selector-converter': 'bemquerySelectorConverter',
 		'bemquery-selector-engine': 'bemquerySelectorEngine'
 	},
-	format: 'es6',
+	format: 'es',
 	sourceMap: true,
 	plugins: [
 		nodeResolve( {
