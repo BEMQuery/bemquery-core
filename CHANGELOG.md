@@ -2,6 +2,11 @@
 
 ---
 
+## 0.1.3
+
+* Updated CI configuration.
+* Updated dependencies.
+
 ## 0.1.2
 
 * Updated rollup configuration.
