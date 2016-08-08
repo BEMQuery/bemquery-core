@@ -1,6 +1,6 @@
 {
   "name": "bemquery-core",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "BEMQuery library core",
   "main": "dist/bemquery-core.umd.js",
   "jsnext:main": "dist/bemquery-core.js",
