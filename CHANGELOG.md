@@ -2,6 +2,10 @@
 
 ---
 
+## 0.1.4
+
+* Updated boilerplate.
+
 ## 0.1.3
 
 * Updated CI configuration.
