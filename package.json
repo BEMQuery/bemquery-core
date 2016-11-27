@@ -29,10 +29,13 @@
       "refactor",
       "perf",
       "test",
-      "chore"
+      "build",
+      "ci",
+      "chore",
+      "revert"
     ],
     "scope": "\\S+.*"
-  },
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/BEMQuery/bemquery-core.git"
